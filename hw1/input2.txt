@@ -1,0 +1,17 @@
+accept
+ABABAA DABAA #DDAABCC BBB AA AB2 AB#
+7
+6 5
+3 A 5 A H
+1 B 4 A L
+4 B 2 A R
+2 B 3 A L
+0 # 6 # H
+2 # 6 # H
+0 A 1 B R
+4 # 6 # H
+3 # 3 A R
+0 B 4 D R
+1 # 6 # H
+4 A 3 A R
+3 B 6 # H

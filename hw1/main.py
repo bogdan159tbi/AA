@@ -2,8 +2,9 @@
 import sys
 #func to read tapes from file
 #list of dictionaries
+
 def readTapes(f):
-    str = sys.stdin.readline()
+    str = f.readline()
     listDex = []
     for x in str.split(" "):
         tape = dict()
@@ -24,13 +25,13 @@ def readTapes(f):
 
 #func to read transition
 def readTM(f):
-    nrStates = sys.stdin.readline()
-    line = sys.stdin.readline()
+    nrStates = f.readline()
+    line = f.readline()
     finalStates = []
     for state in line.split(" "):
         if(state != '-'):#daca exista vreo stare finala
             finalStates.append(state)
-    Lines = sys.stdin.readline()
+    Lines = f.readlines()
     listTrans = []
     for line in Lines:
         state = 0
@@ -171,11 +172,11 @@ def k_accept(word,transitions,finalStates,steps):
                                     execSteps = execSteps + 1
                                     found = 1
                                     if(pos == 0):
-                                        word2 =  tran["nSimb"] + word[pos + 1: len(word)]
+                                        word2 =  tran["nSimb"] + word[1: len(word)]
                                     elif(pos == 1):
-                                        word2 = word[0] + tran["nSimb"] + word[pos + 1 : len(word)]
+                                        word2 = word[0:1] + tran["nSimb"] + word[2:len(word)]
                                     else:
-                                        word2 = word[0:pos-1] + tran["nSimb"] + word[pos + 1 : len(word)]
+                                        word2 = word[0:pos-1] + tran["nSimb"] + word[pos+1:len(word)]
                                     word = word2
                                     state = tran["nState"]
                                     if(tran["pos"] == 'R'):
@@ -184,13 +185,38 @@ def k_accept(word,transitions,finalStates,steps):
                                         pos = pos - 1
                                     #print(state,word[pos])
                                     break
+                            else:
+                                if(csimb == "#"):
+                                    execSteps = execSteps + 1
+                                    found = 1
+                                    word2 = word[0:len(word)] + tran["nSimb"]
+                                    word = word2
+                                    state = tran["nState"]
+                                    if(tran["pos"] == 'R'):
+                                        pos += 1
+                                    elif(tran["pos"] == 'L'):
+                                        pos = pos - 1
+                                    break
+                        elif(pos < 0):
+                            if(csimb == "#"):
+                                execSteps = execSteps + 1
+                                found = 1
+                                word2 = word[0:len(word)] + tran["nSimb"]
+                                word = word2
+                                state = tran["nState"]
+                                if(tran["pos"] == 'R'):
+                                    pos += 1
+                                elif(tran["pos"] == 'L'):
+                                    pos = pos - 1
+                                break
+
         if(found == 0):
             break
     #print("am aj la ",word,state,word[pos],pos)
     print(accepts == 1)
 #main
-f = open("input3.txt", "r")
-task = sys.stdin.readline()
+f = open("input4.txt", "r")
+task = f.readline()
 task = task[0:len(task)-1]
 if(task == "step"):
     listTapes = readTapes(f)
@@ -198,7 +224,7 @@ if(task == "step"):
     for i in range(0,len(listTapes)):
         step(listTapes[i],listTrans)
 elif(task == "accept"):
-    words = sys.stdin.readline()
+    words = f.readline()
     nrStates, finalStates , listTrans = readTM(f)
     for word in words.split(' '):
         accept(word,listTrans,finalStates)
@@ -206,7 +232,7 @@ elif(task == "k_accept"):
     words = []
     count = [0] * 1000000 #cate cuvinte avem de interpretat pe TM
     elem = 0
-    cuvk = sys.stdin.readline()
+    cuvk = f.readline()
     for i in cuvk.split(" "):
         first = 1
         for j in i.split(","):
@@ -226,5 +252,18 @@ elif(task == "k_accept"):
     #words lista cuvinte si count nr de pasi pt fiecare cuvant corespunzator
 
 f.close()#done reading TM
+
+#while True:
+    #data = sys.stdin.read()
+    #if not len(data):
+    #    break
+    #sys.stdout.write(data)
+
+#for line in sys.stdin:
+#   if 'q' == line.rstrip():
+#       break
+ #   print(f'Input : {line[0:len(line)-1]}')
+
+#print("Exit")
 
 #step(listTapes[0],listTrans)

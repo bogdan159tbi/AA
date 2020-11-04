@@ -58,14 +58,14 @@ def readTM(f):
 #func to return index from list of dex
 def searchDex(list,state,simb):
     index = 0
-    print(state,simb)
+    #print(state,simb)
     for trans in list:
         if(trans["cSimb"] == simb):
             if(trans["cState"] == state):
-                print("verific: ",trans["cState"],state)
+                #print("verific: ",trans["cState"],state)
                 return index
         index += 1
-    print("False")
+    print("False",end = " ")
     return -1
 #step function
 #@tape represents word  to be simulated on
@@ -84,17 +84,23 @@ def step(tape,transitions):
     elif(transitions[index]["pos"] == 'L'):
         tape["rightW"] = transitions[index]["nSimb"] + tape["rightW"][1:len(tape["rightW"])] #scap de prima litera de la rightw si o inlocuiesc cu urmatorul simbol care trebuie sa suprascrie prima litera de la rightw
         simb = tape["leftW"][len(tape["leftW"])-1]
-        if(tape["leftW"][len(tape["leftW"])-1] == '#'):#trece la simbol # fiind ultimul din stanga
-         tape["leftW"] = '#'#in stanga primului # e tot #
-        else:
-            tape["leftW"] = tape["leftW"][len(tape["leftW"]) - 2 ] # nu stiu sigur daca -2/-1 ca sa scap de ultimul carac de la capatul lui leftW
+        #if(tape["leftW"][len(tape["leftW"])-1] == '#'):#trece la simbol # fiind ultimul din stanga
+         #tape["leftW"] = '#'#in stanga primului # e tot #
+        #else:
+            #tape["leftW"] = tape["leftW"][len(tape["leftW"]) - 2 ] # nu stiu sigur daca -2/-1 ca sa scap de ultimul carac de la capatul lui leftW
+        tape["leftW"] = tape["leftW"][0:len(tape["leftW"])-1]
         tape["rightW"] = simb + tape["rightW"]
         tape["state"] = transitions[index]["nState"]
     elif(transitions[index]["pos"] == 'H'):
         tape["leftW"] = tape["leftW"]
         tape["rightW"] = transitions[index]["nSimb"] + tape["rightW"][1:len(tape["rightW"])]
         tape["state"] = transitions[index]["nState"]
-    print(tape)
+    if(len(tape["leftW"]) == 0 ):
+        tape["leftW"] = "#"
+    if(len(tape["rightW"]) == 0 ):
+        tape["rightW"] = "#"
+    output = '(' + tape["leftW"] + "," + tape["state"] + ',' + tape["rightW"] + ')'
+    print(output,end = " ")
 
 #func that checks if tm accepts given word
 def accept(word,transitions,finalStates):
@@ -119,8 +125,19 @@ def accept(word,transitions,finalStates):
                     csimb = tran["cSimb"]
                     #print("caut",state,word[pos],cst,csimb)
                     if(cst == state):
-                        if(pos >= 0):
-                            if(csimb == word[pos]):
+                        if(pos >= 0): # index out of range pt urm if la word[pos]
+                            if(pos >= len(word)):
+                                if(csimb == '#'):
+                                    found = 1
+                                    word2 = word[0:len(word)] + tran["nSimb"]
+                                    word = word2
+                                    state = tran["nState"]
+                                    if(tran["pos"] == 'R'):
+                                        pos += 1
+                                    elif(tran["pos"] == 'L'):
+                                        pos = pos - 1
+                                    break
+                            elif(csimb == word[pos]):
                                 found = 1
                                 if(pos == 0):
                                     word2 =  tran["nSimb"] + word[pos + 1: len(word)]
@@ -136,10 +153,23 @@ def accept(word,transitions,finalStates):
                                     pos = pos - 1
                                 #print(state,word[pos])
                                 break
+                        elif(pos < 0):
+                            if(csimb == "#"):
+                                    found = 1
+                                    word2 = word[0:len(word)] + tran["nSimb"]
+                                    word = word2
+                                    state = tran["nState"]
+                                    if(tran["pos"] == 'R'):
+                                        pos += 1
+                                    elif(tran["pos"] == 'L'):
+                                        pos = pos - 1
+                                    break
+
         if(found == 0):
             break
     #print("am aj la ",word,state,word[pos],pos)
-    print(accepts == 1)
+
+    print(accepts == 1,end = " ")
 
 def k_accept(word,transitions,finalStates,steps):
     pos = 0
@@ -161,31 +191,46 @@ def k_accept(word,transitions,finalStates,steps):
                 break
             else:
                 #print("caut",state,word[pos])
-                for tran in transitions:
-                    cst = tran["cState"]
-                    csimb = tran["cSimb"]
-                    #print("caut",state,word[pos],cst,csimb)
-                    if(cst == state):
-                        if(pos >= 0):
-                            if(pos < len(word)):
-                                if(csimb == word[pos]):
-                                    execSteps = execSteps + 1
-                                    found = 1
-                                    if(pos == 0):
-                                        word2 =  tran["nSimb"] + word[1: len(word)]
-                                    elif(pos == 1):
-                                        word2 = word[0:1] + tran["nSimb"] + word[2:len(word)]
-                                    else:
-                                        word2 = word[0:pos-1] + tran["nSimb"] + word[pos+1:len(word)]
-                                    word = word2
-                                    state = tran["nState"]
-                                    if(tran["pos"] == 'R'):
-                                        pos += 1
-                                    elif(tran["pos"] == 'L'):
-                                        pos = pos - 1
-                                    #print(state,word[pos])
-                                    break
-                            else:
+                if(execSteps > steps):
+                    break
+                else:
+                    for tran in transitions:
+                        cst = tran["cState"]
+                        csimb = tran["cSimb"]
+                        #print("caut",state,word[pos],cst,csimb)
+                        if(cst == state):
+                            if(pos >= 0):
+                                if(pos < len(word)):
+                                    if(csimb == word[pos]):
+                                        execSteps = execSteps + 1
+                                        found = 1
+                                        if(pos == 0):
+                                            word2 =  tran["nSimb"] + word[1: len(word)]
+                                        elif(pos == 1):
+                                            word2 = word[0:1] + tran["nSimb"] + word[2:len(word)]
+                                        else:
+                                            word2 = word[0:pos-1] + tran["nSimb"] + word[pos+1:len(word)]
+                                        word = word2
+                                        state = tran["nState"]
+                                        if(tran["pos"] == 'R'):
+                                            pos += 1
+                                        elif(tran["pos"] == 'L'):
+                                            pos = pos - 1
+                                        #print(state,word[pos])
+                                        break
+                                else:
+                                    if(csimb == "#"):
+                                        execSteps = execSteps + 1
+                                        found = 1
+                                        word2 = word[0:len(word)] + tran["nSimb"]
+                                        word = word2
+                                        state = tran["nState"]
+                                        if(tran["pos"] == 'R'):
+                                            pos += 1
+                                        elif(tran["pos"] == 'L'):
+                                            pos = pos - 1
+                                        break
+                            elif(pos < 0):
                                 if(csimb == "#"):
                                     execSteps = execSteps + 1
                                     found = 1
@@ -197,25 +242,24 @@ def k_accept(word,transitions,finalStates,steps):
                                     elif(tran["pos"] == 'L'):
                                         pos = pos - 1
                                     break
-                        elif(pos < 0):
-                            if(csimb == "#"):
-                                execSteps = execSteps + 1
-                                found = 1
-                                word2 = word[0:len(word)] + tran["nSimb"]
-                                word = word2
-                                state = tran["nState"]
-                                if(tran["pos"] == 'R'):
-                                    pos += 1
-                                elif(tran["pos"] == 'L'):
-                                    pos = pos - 1
-                                break
 
         if(found == 0):
             break
-    #print("am aj la ",word,state,word[pos],pos)
-    print(accepts == 1)
+    if(execSteps > steps ):
+        print("False")
+    else:
+        print(accepts == 1,word)
+def k_accept2(word,transitions,finalStates,steps):
+    tape = dict()
+    tape["state"] = "0"
+    tape["leftW"] = '#'
+    tape["rightW"] = word
+    for i in range(0,steps):
+        step(tape,transitions)
+
+
 #main
-f = open("input4.txt", "r")
+f = open("./tema1_in/k_accept/input/k_accept2.in", "r")
 task = f.readline()
 task = task[0:len(task)-1]
 if(task == "step"):
@@ -247,7 +291,10 @@ elif(task == "k_accept"):
     nrStates, finalStates , listTrans = readTM(f)
     whichW = 0
     for word in words:
-        k_accept(word,listTrans,finalStates,count[whichW])
+        #print(word,end = " = ")
+        k_accept2(word,listTrans,finalStates,count[whichW])
+        break
+        #print()
         whichW += 1
     #words lista cuvinte si count nr de pasi pt fiecare cuvant corespunzator
 
